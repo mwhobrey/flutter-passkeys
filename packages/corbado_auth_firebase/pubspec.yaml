@@ -2,16 +2,16 @@ name: corbado_auth_firebase
 description: Flutter package to enable passkey based authentication with Firebase powered by Corbado.
 homepage: https://docs.corbado.com/overview/welcome
 repository: https://github.com/corbado/flutter-passkeys/tree/main/packages/corbado_auth_firebase
-version: 2.0.5
+version: 2.0.6
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
   flutter: ">=3.0.0"
 
 dependencies:
-  cloud_functions: ^4.5.8
-  corbado_auth: ^2.0.8
-  corbado_frontend_api_client: ^1.1.1
+  cloud_functions: ^5.6.1
+  corbado_auth: ^3.4.1
+  corbado_frontend_api_client: ^2.2.0
   flutter:
     sdk: flutter
   flutter_keychain: ^2.4.0
@@ -29,7 +29,7 @@ dev_dependencies:
     sdk: flutter
   json_serializable: ^6.7.0
   mocktail: ^1.0.0
-  very_good_analysis: ^5.0.0
+  very_good_analysis: ^9.0.0
 
 false_secrets:
   - /example/android/app/google-services.json
