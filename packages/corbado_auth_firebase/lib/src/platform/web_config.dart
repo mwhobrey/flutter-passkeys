@@ -43,6 +43,12 @@ class WebConfig {
     if (error.toString().contains('InvalidStateError')) {
       return 'Passkey operation failed. Please try again.';
     }
+    if (error.toString().contains('UnknownErrorException')) {
+      return 'Passkey operation failed. Please try again or contact support.';
+    }
+    if (error.toString().contains('FirebaseFunctionsException')) {
+      return 'Firebase function execution failed. Please check your configuration.';
+    }
     return 'An error occurred during passkey operation: ${error.toString()}';
   }
 
