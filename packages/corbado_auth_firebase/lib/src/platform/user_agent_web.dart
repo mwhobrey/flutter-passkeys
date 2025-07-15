@@ -1,35 +1,30 @@
-import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
+import 'package:web/web.dart' as web;
 
 /// Web-specific implementation for user agent handling
 class UserAgentWeb {
   /// Get user agent information for web platform
   static Future<Map<String, dynamic>> getUserAgentInfo() async {
     try {
-      // Try to get user agent data if available (modern browsers)
-      if (html.window.navigator.userAgentData != null) {
-        final userAgentData = html.window.navigator.userAgentData!;
-        return {
-          'brands':
-              userAgentData.brands
-                  ?.map(
-                    (brand) => {'brand': brand.brand, 'version': brand.version},
-                  )
-                  .toList() ??
-              [],
-          'mobile': userAgentData.mobile ?? false,
-          'platform': userAgentData.platform ?? 'unknown',
-        };
-      }
+      // Get user agent string and parse it
+      final userAgent = web.window.navigator.userAgent;
+      return _parseUserAgentString(userAgent);
     } catch (e) {
       if (kDebugMode) {
-        print('Failed to get userAgentData: $e');
+        print('Failed to get user agent: $e');
       }
-    }
 
-    // Fallback to basic user agent string parsing
-    final userAgent = html.window.navigator.userAgent;
-    return _parseUserAgentString(userAgent);
+      // Return a fallback if everything fails
+      return {
+        'brands': [
+          {'brand': 'Unknown', 'version': '1.0'},
+          {'brand': 'Not=A?Brand', 'version': '99'},
+        ],
+        'mobile': false,
+        'platform': 'unknown',
+        'userAgent': 'Unknown/1.0',
+      };
+    }
   }
 
   /// Parse user agent string to extract basic information
@@ -81,8 +76,7 @@ class UserAgentWeb {
     }
 
     // Detect mobile
-    final mobile =
-        lowerUA.contains('mobile') ||
+    final mobile = lowerUA.contains('mobile') ||
         lowerUA.contains('android') ||
         lowerUA.contains('iphone') ||
         lowerUA.contains('ipad');
