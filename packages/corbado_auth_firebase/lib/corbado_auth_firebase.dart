@@ -1,5 +1,7 @@
 library corbado_auth_firebase;
 
-export 'package:corbado_auth/src/types/exceptions/exceptions.dart';
-export 'package:corbado_auth/src/types/passkey_info.dart';
-export 'package:corbado_auth_firebase/src/corbado_auth_firebase.dart';
+export 'src/corbado_auth_firebase.dart';
+
+// Platform-specific exports for advanced usage
+export 'src/platform/user_agent_service.dart';
+export 'src/platform/web_config.dart';

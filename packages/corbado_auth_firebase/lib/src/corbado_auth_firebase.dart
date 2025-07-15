@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:corbado_auth/corbado_auth.dart';
 import 'package:corbado_auth_firebase/src/services/corbado.dart';
+import 'package:corbado_auth_firebase/src/platform/user_agent_service.dart';
+import 'package:corbado_auth_firebase/src/platform/web_config.dart';
 import 'package:passkeys/authenticator.dart';
-import 'package:ua_client_hints/ua_client_hints.dart';
 
 class CorbadoAuthFirebase {
   /// Constructor
@@ -18,6 +19,16 @@ class CorbadoAuthFirebase {
   Future<void> init(String firebaseRegion) async {
     final functions = FirebaseFunctions.instanceFor(region: firebaseRegion);
     _corbadoService = CorbadoService(functions);
+
+    // Check web-specific requirements
+    if (WebConfig.isWeb) {
+      final isSupported = await WebConfig.isPasskeySupported;
+      if (!isSupported) {
+        throw Exception(
+          'Passkeys are not supported in this browser. Please use a modern browser with WebAuthn support.',
+        );
+      }
+    }
   }
 
   Future<String> signUpWithPasskey({
@@ -25,25 +36,42 @@ class CorbadoAuthFirebase {
     String? fullName,
   }) async {
     try {
-      final ua = await userAgent();
+      final ua = await UserAgentService.getUserAgent();
       final challenge = await _corbadoService.startSignUpWithPasskey(email, ua);
       final platformResponse = await _authenticator.register(challenge);
 
       return await _corbadoService.finishSignUpWithPasskey(
-          platformResponse, ua);
+        platformResponse,
+        ua,
+      );
     } catch (e) {
+      if (WebConfig.isWeb) {
+        throw Exception(WebConfig.getWebErrorMessage(e));
+      }
       throw e;
     }
   }
 
   Future<bool> appendPasskey(String firebaseToken) async {
-    final ua = await userAgent();
-    final challenge =
-        await _corbadoService.startPasskeyAppend(firebaseToken, ua);
-    final platformResponse = await _authenticator.register(challenge);
+    try {
+      final ua = await UserAgentService.getUserAgent();
+      final challenge = await _corbadoService.startPasskeyAppend(
+        firebaseToken,
+        ua,
+      );
+      final platformResponse = await _authenticator.register(challenge);
 
-    return _corbadoService.finishPasskeyAppend(
-        firebaseToken, platformResponse, ua);
+      return _corbadoService.finishPasskeyAppend(
+        firebaseToken,
+        platformResponse,
+        ua,
+      );
+    } catch (e) {
+      if (WebConfig.isWeb) {
+        throw Exception(WebConfig.getWebErrorMessage(e));
+      }
+      throw e;
+    }
   }
 
   Future<void> cancelAuthenticatorOperation() {
@@ -95,15 +123,22 @@ class CorbadoAuthFirebase {
   }
 
   Future<String> _loginWithPasskey(String email) async {
-    final isConditionalUI = email.isEmpty;
-    final ua = await userAgent();
-    final challenge = await _corbadoService.startLoginWithPasskey(
-      email,
-      ua,
-      conditional: isConditionalUI,
-    );
-    final platformResponse = await _authenticator.authenticate(challenge);
+    try {
+      final isConditionalUI = email.isEmpty;
+      final ua = await UserAgentService.getUserAgent();
+      final challenge = await _corbadoService.startLoginWithPasskey(
+        email,
+        ua,
+        conditional: isConditionalUI,
+      );
+      final platformResponse = await _authenticator.authenticate(challenge);
 
-    return _corbadoService.finishLoginWithPasskey(platformResponse, ua);
+      return _corbadoService.finishLoginWithPasskey(platformResponse, ua);
+    } catch (e) {
+      if (WebConfig.isWeb) {
+        throw Exception(WebConfig.getWebErrorMessage(e));
+      }
+      throw e;
+    }
   }
 }
