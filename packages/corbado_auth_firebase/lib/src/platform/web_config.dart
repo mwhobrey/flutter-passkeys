@@ -35,7 +35,9 @@ class WebConfig {
     if (error.toString().contains('NotSupportedError')) {
       return 'Passkeys are not supported in this browser. Please use a modern browser.';
     }
-    if (error.toString().contains('NotAllowedError')) {
+    if (error.toString().contains('NotAllowedError') ||
+        error.toString().contains('cancelled') ||
+        error.toString().contains('PasskeyAuthCancelledException')) {
       return 'Passkey operation was cancelled by the user.';
     }
     if (error.toString().contains('InvalidStateError')) {
