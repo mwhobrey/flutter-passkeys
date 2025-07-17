@@ -6,6 +6,7 @@ import 'package:corbado_auth_firebase/src/services/corbado.dart';
 import 'package:corbado_auth_firebase/src/platform/user_agent_service.dart';
 import 'package:corbado_auth_firebase/src/platform/web_config.dart';
 import 'package:passkeys/authenticator.dart';
+import 'package:flutter/foundation.dart';
 
 class CorbadoAuthFirebase {
   /// Constructor
@@ -36,15 +37,41 @@ class CorbadoAuthFirebase {
     String? fullName,
   }) async {
     try {
-      final ua = await UserAgentService.getUserAgent();
-      final challenge = await _corbadoService.startSignUpWithPasskey(email, ua);
-      final platformResponse = await _authenticator.register(challenge);
+      if (kDebugMode) {
+        print('Starting signup with passkey for email: $email');
+      }
 
-      return await _corbadoService.finishSignUpWithPasskey(
+      final ua = await UserAgentService.getUserAgent();
+      if (kDebugMode) {
+        print('User agent obtained: $ua');
+      }
+
+      final challenge = await _corbadoService.startSignUpWithPasskey(email, ua,
+          fullName: fullName);
+      if (kDebugMode) {
+        print('Challenge received from Corbado');
+      }
+
+      final platformResponse = await _authenticator.register(challenge);
+      if (kDebugMode) {
+        print('Platform response received from authenticator');
+      }
+
+      final result = await _corbadoService.finishSignUpWithPasskey(
         platformResponse,
         ua,
       );
+
+      if (kDebugMode) {
+        print('Signup completed successfully');
+      }
+
+      return result;
     } catch (e) {
+      if (kDebugMode) {
+        print('Signup failed with error: $e');
+      }
+
       if (WebConfig.isWeb) {
         throw Exception(WebConfig.getWebErrorMessage(e));
       }

@@ -25,6 +25,7 @@ class AuthService {
 
   Future<String?> register({required String email}) async {
     try {
+      // Use email as fallback for fullName if not provided
       final passkeyToken =
           await _corbadoAuth.signUpWithPasskey(email: email, fullName: email);
       await _firebaseAuth.signInWithCustomToken(passkeyToken);

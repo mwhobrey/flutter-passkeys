@@ -29,14 +29,36 @@ class UserAgentService {
   static Future<String> getUserAgent() async {
     try {
       // Try to use the ua_client_hints package
-      return await userAgent();
+      final ua = await userAgent();
+      if (kDebugMode) {
+        print('ua_client_hints succeeded: $ua');
+      }
+      return ua;
     } catch (e) {
       if (kDebugMode) {
         print('ua_client_hints failed, using fallback: $e');
       }
 
       // Fallback to our platform-specific implementation
-      return getUserAgentString();
+      try {
+        final fallbackUa = await getUserAgentString();
+        if (kDebugMode) {
+          print('Platform-specific implementation succeeded: $fallbackUa');
+        }
+        return fallbackUa;
+      } catch (e) {
+        if (kDebugMode) {
+          print(
+              'Platform-specific implementation failed, using hardcoded fallback: $e');
+        }
+
+        // Final fallback - return a realistic user agent string
+        final hardcodedUa = kIsWeb ? 'Chrome/120 (Windows; desktop)' : 'Unknown/1.0 (native; desktop)';
+        if (kDebugMode) {
+          print('Using hardcoded fallback: $hardcodedUa');
+        }
+        return hardcodedUa;
+      }
     }
   }
 }

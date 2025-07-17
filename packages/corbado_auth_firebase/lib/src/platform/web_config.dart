@@ -47,6 +47,9 @@ class WebConfig {
       return 'Passkey operation failed. Please try again or contact support.';
     }
     if (error.toString().contains('FirebaseFunctionsException')) {
+      if (error.toString().contains('UNKNOWN_ERROR')) {
+        return 'Firebase function encountered an unknown error. This may be a server-side issue. Please try again or contact support.';
+      }
       return 'Firebase function execution failed. Please check your configuration.';
     }
     return 'An error occurred during passkey operation: ${error.toString()}';
